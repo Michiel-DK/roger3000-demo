@@ -1,0 +1,885 @@
+<title>roger3000 demo — the machine, in five moments</title>
+<!--
+  DESIGN DIRECTION (committed before build — ui-maker step 2)
+  · Genre: editorial scrollytelling pitch piece — deliberately editorial (serif display is earned, not reflexive).
+  · Type: Charter / Iowan Old Style / Georgia for headlines & report prose; ui-monospace for technical
+    labels/evidence; system sans for body. Same typographic roles as the burger-house reference.
+  · Color: cool violet-tinged neutrals — paper #F6F5FA, ink #1E1B2B (no pure white/black).
+    Accent = roger3000 brand violet #6d4bff. Status triple (verified/unverifiable/fabricated) =
+    #178A57 / #A2761B / #BE3D3D — validated with dataviz validate_palette.js (all checks PASS, light surface);
+    status identity never color-alone (pills carry words, meter carries counts).
+  · Motion: one mode — calm ease/spring reveals, dashed-flow arrows, typewriter for "the machine writing".
+    Scroll-into-view via IntersectionObserver + stepper state machine; resets on exit; honors reduced-motion.
+  · Narrative state: fictional client "Meridian Advisory"; one story threads the moments —
+    startup Voltfield × firm Hartline Capital (ask → report audit → outreach → outcome).
+  · The ONLY real numbers on the page are the three calibration figures in moment 03 (0.0% / 100% / 57).
+-->
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #F6F5FA; --paper-deep: #EEECF5; --card: #FDFDFF;
+    --ink: #1E1B2B; --ink-muted: #635E77; --ink-faint: #9691A8;
+    --hairline: #E4E1EF;
+    --violet: #6d4bff; --violet-deep: #5433D9; --violet-soft: #6d4bff14;
+    --good: #178A57; --warn: #A2761B; --bad: #BE3D3D;
+    --serif: "Charter", "Iowan Old Style", Georgia, serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans);
+    margin: 0; line-height: 1.55; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+
+  /* ---------- hero ---------- */
+  .hero { min-height: 96vh; display: grid; place-content: center; text-align: center;
+    padding: 3rem 1.5rem 2rem; }
+  .eyebrow { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); }
+  .hero h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 5vw, 3.1rem);
+    letter-spacing: -.01em; margin: .6rem 0 .7rem; text-wrap: balance; max-width: 20ch; }
+  .hero p { color: var(--ink-muted); max-width: 46ch; margin: 0 auto; font-size: 1.02rem; }
+  .heropills { display: flex; gap: .45rem; justify-content: center; margin-top: 1.5rem;
+    flex-wrap: wrap; }
+  .heropills .cap { width: 100%; font-family: var(--mono); font-size: .62rem;
+    color: var(--ink-faint); margin-top: .45rem; }
+  .hero .hint { margin-top: 2.2rem; font-family: var(--mono); font-size: .72rem;
+    color: var(--ink-faint); animation: bob 2.4s ease infinite; }
+  @keyframes bob { 50% { transform: translateY(5px); } }
+
+  /* ---------- rows ---------- */
+  .row { min-height: 88vh; display: grid; grid-template-columns: 1.08fr .92fr;
+    gap: 3rem; align-items: center; max-width: 1080px; margin: 0 auto;
+    padding: 3rem 2rem; }
+  .row.flip .stagecell { order: 2; }
+  .row.flip .txt { order: 1; }
+  .stagecell, .txt { min-width: 0; }
+  @media (max-width: 760px) { .row { grid-template-columns: 1fr; min-height: auto; gap: 1.6rem; }
+    .row.flip .stagecell { order: 0; } .row.flip .txt { order: 1; } }
+
+  .txt .kicker { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--violet); }
+  .txt h2 { font-family: var(--serif); font-weight: 500; font-size: 1.7rem;
+    margin: .45rem 0 .7rem; text-wrap: balance; }
+  .txt p { color: var(--ink-muted); font-size: .92rem; max-width: 46ch; }
+  .txt .fine { font-family: var(--mono); font-size: .67rem; color: var(--ink-faint);
+    border-top: 1px solid var(--hairline); padding-top: .6rem; margin-top: 1.1rem; max-width: 46ch; }
+
+  /* ---------- shared frame ---------- */
+  .frame { background: var(--card); border: 1px solid var(--hairline); border-radius: 14px;
+    box-shadow: 0 1px 2px #1E1B2B0a, 0 12px 32px -18px #1E1B2B2e; overflow: hidden; }
+  .chrome { display: flex; align-items: center; gap: .5rem; padding: .55rem .85rem;
+    border-bottom: 1px solid var(--hairline); flex-wrap: wrap;
+    font-family: var(--mono); font-size: .68rem; color: var(--ink-muted); }
+  .chrome b { color: var(--ink); font-weight: 600; }
+  .chrome .right { margin-left: auto; font-variant-numeric: tabular-nums; text-align: right; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--violet);
+    position: relative; flex: none; }
+  .dot::after { content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: var(--card); top: 3px; left: 5px; }
+  .canvas { position: relative; padding: 1.4rem 1.4rem 1.3rem; min-height: 330px; }
+  .arr { stroke: var(--violet); stroke-width: 1.5; fill: none;
+    stroke-dasharray: 6 5; animation: dashmove 1.1s linear infinite; }
+  @keyframes dashmove { to { stroke-dashoffset: -11; } }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 12px #6d4bff22; } }
+  .fcaret { display: inline-block; width: 1px; height: 1em; background: currentColor;
+    vertical-align: -.12em; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* shared status pills (hero + trust) */
+  .pill { display: inline-block; font-family: var(--mono); font-size: .62rem;
+    padding: .18rem .55rem; border-radius: 999px; white-space: nowrap; }
+  .pill.ok  { color: var(--good); background: #178A5712; border: 1px solid #178A5738; }
+  .pill.un  { color: var(--warn); background: #A2761B12; border: 1px solid #A2761B38; }
+  .pill.fab { color: var(--bad);  background: #BE3D3D10; border: 1px solid #BE3D3D38; }
+
+  /* =========== S1 INGEST =========== */
+  #s1 { display: grid; align-content: center; min-height: 470px; }
+  .srcgrid { display: flex; justify-content: center; gap: 1.4rem;
+    max-width: 460px; margin: 0 auto; width: 100%; }
+  .srccol { display: grid; gap: .4rem; justify-items: center; align-content: start;
+    flex: 0 1 200px; min-width: 0; }
+  /* single-lane "files" phase centers on its own; the market lane joins at "ext" */
+  .srccol.market { display: none; }
+  :is([data-p="ext"],[data-p="proc"],[data-p="read"],[data-p="name"])
+    .srccol.market { display: grid; }
+  .lanelbl { font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); opacity: 0; transition: opacity .45s; }
+  .schip { font-family: var(--mono); font-size: .66rem; padding: .36rem .65rem;
+    border: 1px solid var(--hairline); border-radius: 8px; background: var(--paper);
+    color: var(--ink-muted); opacity: 0; transform: translateY(8px);
+    transition: opacity .45s, transform .45s; white-space: nowrap; }
+  .srccol .schip:nth-of-type(2) { transition-delay: .16s; }
+  .srccol .schip:nth-of-type(3) { transition-delay: .32s; }
+  :is([data-p="files"],[data-p="ext"],[data-p="proc"],[data-p="read"],[data-p="name"])
+    .srccol.yours :is(.schip,.lanelbl) { opacity: 1; transform: none; }
+  :is([data-p="ext"],[data-p="proc"],[data-p="read"],[data-p="name"])
+    .srccol.market :is(.schip,.lanelbl) { opacity: 1; transform: none; }
+  :is([data-p="proc"],[data-p="read"],[data-p="name"]) .srcgrid .schip { opacity: .4; }
+  :is([data-p="alone"],[data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"])
+    :is(.srcgrid,.flow) { visibility: hidden; }
+
+  .flow { display: grid; place-items: center; height: 60px; }
+  .flow svg { width: 240px; height: 100%; opacity: 0; transition: opacity .4s; overflow: visible; }
+  :is([data-p="proc"],[data-p="read"],[data-p="name"]) .flow svg { opacity: 1; }
+
+  .bigwrap { display: grid; place-items: center; visibility: hidden; }
+  :is([data-p="proc"],[data-p="read"],[data-p="name"],[data-p="alone"],
+      [data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigwrap { visibility: visible; }
+  .bigcard { width: 232px; background: var(--card); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: .8rem .95rem;
+    opacity: 0; scale: .85;
+    transition: opacity .4s, scale .45s cubic-bezier(.3,1.25,.4,1),
+      width .75s cubic-bezier(.3,.9,.3,1), border-color .6s; }
+  :is([data-p="proc"],[data-p="read"],[data-p="name"],[data-p="alone"],
+      [data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigcard { opacity: 1; scale: 1; }
+  :is([data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigcard {
+    width: min(540px, 100%); border-color: var(--violet); }
+  .bigcard .bh { display: flex; align-items: center; gap: .45rem; font-size: .8rem;
+    font-weight: 600; min-height: 1.25em; }
+  .bigcard .bh .t1 { font-weight: 500; color: var(--ink-muted); }
+  .bigcard .bh .t2 { display: none; }
+  :is([data-p="name"],[data-p="alone"],[data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"])
+    .bigcard .bh .t1 { display: none; }
+  :is([data-p="name"],[data-p="alone"],[data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"])
+    .bigcard .bh .t2 { display: inline; }
+  .bigcard .inner { display: grid; gap: .7rem; justify-items: center;
+    max-height: 0; opacity: 0; overflow: hidden; margin-top: 0;
+    transition: max-height .75s ease .12s, opacity .55s .2s, margin-top .5s; }
+  :is([data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigcard .inner {
+    max-height: 440px; opacity: 1; margin-top: .7rem; }
+
+  .vrow { display: flex; gap: .7rem; justify-content: center; width: 100%; }
+  .braincard { background: var(--paper); border: 1px solid var(--hairline); border-radius: 12px;
+    padding: .65rem .8rem; flex: 1; min-width: 0; }
+  .braincard .bh { display: flex; align-items: center; gap: .45rem; font-size: .76rem;
+    font-weight: 600; margin-bottom: 0; }
+  .pchips { max-height: 0; overflow: hidden; transition: max-height .7s ease; }
+  .pchip { font-family: var(--mono); font-size: .63rem; color: var(--ink-muted);
+    background: var(--card); border-radius: 6px; padding: .28rem .5rem; margin-top: .35rem; }
+  .braincard.g { width: 100%; flex: none; border-color: var(--violet); }
+  :is([data-p="unfoldv"],[data-p="unfoldg"]) .braincard.v .pchips { max-height: 110px; }
+  [data-p="unfoldg"] .braincard.g .pchips { max-height: 110px; }
+
+  /* =========== S2 INTELLIGENCE =========== */
+  #s2 { min-height: 430px; }
+  .chat { display: grid; gap: .8rem; align-content: start; }
+  .qbub { justify-self: end; max-width: 36ch; background: var(--violet); color: var(--card);
+    font-family: var(--serif); font-size: .98rem; line-height: 1.4;
+    border-radius: 14px 14px 4px 14px; padding: .55rem .95rem; min-height: 1.4em;
+    opacity: 0; transform: translateY(8px) scale(.92); transform-origin: bottom right;
+    transition: opacity .35s, transform .4s cubic-bezier(.25,1.2,.4,1); }
+  :is([data-p="ask"],[data-p="routed"],[data-p="think"],[data-p="a1"],[data-p="a2"],
+      [data-p="a3"],[data-p="hold"]) .qbub { opacity: 1; transform: none; }
+
+  .routewrap { justify-self: start; display: grid; gap: .3rem;
+    opacity: 0; transform: translateY(8px) scale(.9); transform-origin: top left;
+    transition: opacity .35s, transform .4s cubic-bezier(.2,1.35,.4,1); }
+  :is([data-p="routed"],[data-p="think"],[data-p="a1"],[data-p="a2"],[data-p="a3"],[data-p="hold"])
+    .routewrap { opacity: 1; transform: none; }
+  .routepill { display: inline-flex; align-items: center; gap: .45rem;
+    font-family: var(--mono); font-size: .68rem; color: var(--ink);
+    border: 1px solid #6d4bff45; background: var(--violet-soft);
+    border-radius: 10px; padding: .38rem .7rem; width: fit-content; }
+  .routepill .dot { width: 10px; height: 10px; }
+  .routepill .dot::after { width: 3px; height: 3px; top: 2px; left: 3.5px; }
+  .routesub { font-family: var(--mono); font-size: .6rem; color: var(--ink-faint);
+    padding-left: .2rem; }
+
+  .tdots { display: none; gap: .3rem; padding: .2rem .3rem; }
+  [data-p="think"] .tdots { display: flex; }
+  .tdots span { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint);
+    animation: tbounce 1s ease infinite; }
+  .tdots span:nth-child(2) { animation-delay: .15s; }
+  .tdots span:nth-child(3) { animation-delay: .3s; }
+  @keyframes tbounce { 40% { transform: translateY(-4px); opacity: .5; } }
+
+  .ansrows { display: grid; gap: .5rem; }
+  .ans { display: grid; grid-template-columns: 24px 1fr 76px; gap: .7rem; align-items: center;
+    border: 1px solid var(--hairline); border-radius: 10px; padding: .55rem .7rem;
+    opacity: 0; transform: translateY(10px); transition: opacity .45s, transform .45s; }
+  .ans .arank { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--hairline);
+    display: grid; place-items: center; font-family: var(--mono); font-size: .66rem;
+    color: var(--ink-muted); }
+  .ans.a1 .arank { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
+  .ans .aname { font-size: .82rem; font-weight: 600; line-height: 1.25; }
+  .ans .athesis { font-size: .74rem; color: var(--ink-muted); line-height: 1.35; }
+  .ans .aev { font-family: var(--mono); font-size: .6rem; color: var(--ink-faint); margin-top: .18rem; }
+  .ans .acol { display: grid; gap: .25rem; justify-items: end; }
+  .ans .afit { font-family: var(--mono); font-size: .66rem; color: var(--ink);
+    font-variant-numeric: tabular-nums; }
+  .ans .atrack { width: 100%; height: 4px; border-radius: 2px; background: var(--paper-deep); }
+  .ans .abar { display: block; height: 100%; width: 0; border-radius: 2px; background: var(--violet);
+    transition: width .9s cubic-bezier(.3,.7,.3,1) .15s; }
+  :is([data-p="a1"],[data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a1 { opacity: 1; transform: none; }
+  :is([data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a2 { opacity: 1; transform: none; }
+  :is([data-p="a3"],[data-p="hold"]) .ans.a3 { opacity: 1; transform: none; }
+  :is([data-p="a1"],[data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a1 .abar { width: var(--w); }
+  :is([data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a2 .abar { width: var(--w); }
+  :is([data-p="a3"],[data-p="hold"]) .ans.a3 .abar { width: var(--w); }
+
+  /* =========== S3 TRUST (centrepiece) =========== */
+  #s3 { min-height: 580px; }
+  .rephead { display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; margin-bottom: .8rem; flex-wrap: wrap; }
+  .reptitle { font-family: var(--serif); font-size: .95rem; }
+  .repsub { font-family: var(--mono); font-size: .62rem; color: var(--ink-faint); }
+  .claims { display: grid; gap: .45rem; min-height: 232px; align-content: start; }
+  .crow { border: 1px solid transparent; border-radius: 10px; padding: .5rem .65rem .45rem;
+    display: grid; grid-template-columns: 1fr auto; gap: .12rem .8rem; align-items: start;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .45s, transform .45s, background .35s, border-color .35s; }
+  .crow.in { opacity: 1; transform: none; }
+  .crow.scan { background: var(--violet-soft); border-color: #6d4bff3a; }
+  .crow .ct { font-family: var(--serif); font-size: .88rem; line-height: 1.4;
+    transition: color .4s; }
+  .crow .cside { justify-self: end; padding-top: .1rem; }
+  .cscan { font-family: var(--mono); font-size: .6rem; color: var(--violet); display: none;
+    white-space: nowrap; }
+  .crow.scan .cscan { display: inline; }
+  .crow .cpill { display: none; }
+  .crow.done .cpill { display: inline-block; animation: pillin .35s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes pillin { from { opacity: 0; transform: scale(.55); } }
+  .csrc { grid-column: 1 / -1; font-family: var(--mono); font-size: .6rem;
+    color: var(--ink-faint); max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height .4s, opacity .4s .1s; }
+  .crow.done .csrc { max-height: 4.6em; opacity: 1; }
+  .crow.fab .ct { text-decoration: line-through; text-decoration-color: #BE3D3D73;
+    color: var(--ink-faint); }
+  .crow.fab .csrc { color: var(--bad); }
+
+  .gband { margin-top: .9rem; opacity: 0; transform: translateY(6px);
+    transition: opacity .5s, transform .5s; }
+  .gband.in { opacity: 1; transform: none; }
+  .gmeter { display: flex; gap: 2px; height: 12px; }
+  .gseg { display: block; width: 0; border-radius: 3px;
+    transition: width .9s cubic-bezier(.3,.7,.3,1) .15s; }
+  .gseg.ok  { background: var(--good); }
+  .gseg.un  { background: var(--warn); }
+  .gseg.fab { background: var(--bad); }
+  .gband.in .gseg.ok  { width: 50%; }
+  .gband.in .gseg.un  { width: 25%; }
+  .gband.in .gseg.fab { width: 25%; }
+  .gcounts { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .45rem;
+    font-family: var(--mono); font-size: .62rem; color: var(--ink-muted); }
+  .gcounts .k { display: inline-block; width: 8px; height: 8px; border-radius: 2px;
+    margin-right: .35rem; vertical-align: -1px; }
+  .gcounts .k.ok  { background: var(--good); }
+  .gcounts .k.un  { background: var(--warn); }
+  .gcounts .k.fab { background: var(--bad); }
+
+  .calib { margin-top: .9rem; border: 1px solid #6d4bff2e; background: #6d4bff08;
+    border-radius: 12px; padding: 0 1rem; max-height: 0; opacity: 0; overflow: hidden;
+    transition: max-height .7s ease, opacity .5s .1s, padding .5s; }
+  .calib.in { max-height: 280px; opacity: 1; padding: .85rem 1rem .8rem; }
+  .calhead { font-family: var(--mono); font-size: .62rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--violet); }
+  .ctiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem;
+    margin: .65rem 0 .6rem; }
+  .ctile .cnum { font-family: var(--serif); font-size: 1.75rem; line-height: 1.1;
+    font-variant-numeric: tabular-nums; }
+  .ctile .clbl { font-family: var(--mono); font-size: .56rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-faint); line-height: 1.6; margin-top: .2rem; }
+  .ccap { font-family: var(--mono); font-size: .62rem; color: var(--ink-muted);
+    border-top: 1px dashed var(--hairline); padding-top: .55rem; }
+
+  /* =========== S4 OUTREACH =========== */
+  #s4 { min-height: 400px; }
+  .ostage { display: grid; gap: .85rem; align-content: start; }
+  .firmcard { border: 1px solid var(--hairline); border-radius: 12px; padding: .7rem .85rem;
+    opacity: 0; transform: translateY(10px) scale(.95);
+    transition: opacity .4s, transform .45s cubic-bezier(.25,1.2,.4,1); }
+  :is([data-p="quiet"],[data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"])
+    .firmcard { opacity: 1; transform: none; }
+  .fhead { display: flex; align-items: baseline; gap: .55rem; }
+  .fhead .dot { align-self: center; }
+  .fhead b { font-size: .84rem; }
+  .fhead .fsub { font-family: var(--mono); font-size: .62rem; color: var(--ink-faint);
+    margin-left: auto; }
+  .hookchips { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .55rem; }
+  .hchip { font-family: var(--mono); font-size: .62rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); background: var(--paper); border-radius: 7px;
+    padding: .26rem .55rem; transition: border-color .45s, background .45s, color .45s; }
+  :is([data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"]) .hchip {
+    border-color: #6d4bff55; background: var(--violet-soft); color: var(--ink); }
+  :is([data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"]) .hchip.h2 {
+    transition-delay: .25s; }
+
+  .mail { border: 1px solid var(--hairline); border-radius: 12px; background: var(--paper);
+    padding: .7rem .85rem .8rem; opacity: 0; transform: translateY(10px);
+    transition: opacity .4s, transform .45s; }
+  :is([data-p="draft"],[data-p="grounded"],[data-p="hold"]) .mail { opacity: 1; transform: none; }
+  .mrow { font-family: var(--mono); font-size: .64rem; color: var(--ink-muted);
+    padding: .2rem 0; border-bottom: 1px dashed var(--hairline); }
+  .mrow .mk { display: inline-block; width: 3.6em; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: .08em; font-size: .58rem; }
+  .mbody { font-family: var(--serif); font-size: .92rem; line-height: 1.5;
+    padding-top: .55rem; min-height: 5.6em; }
+
+  .gchips { display: flex; gap: .45rem; flex-wrap: wrap; }
+  .gchip { display: inline-flex; align-items: center; gap: .4rem;
+    font-family: var(--mono); font-size: .6rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); border-radius: 999px; padding: .24rem .6rem;
+    background: var(--card);
+    opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+  .gchip::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--violet); }
+  :is([data-p="grounded"],[data-p="hold"]) .gchip { opacity: 1; transform: none; }
+  :is([data-p="grounded"],[data-p="hold"]) .gchip:nth-child(2) { transition-delay: .18s; }
+  :is([data-p="grounded"],[data-p="hold"]) .gchip:nth-child(3) { transition-delay: .36s; }
+
+  /* =========== S5 FLYWHEEL =========== */
+  #s5 { min-height: 430px; }
+  .fw { display: grid; gap: .85rem; align-content: start; }
+  .cornerpill { position: absolute; top: 10px; right: 10px; display: flex; align-items: center;
+    gap: .4rem; background: var(--card); border: 1px solid var(--hairline); border-radius: 10px;
+    padding: .38rem .65rem .38rem .42rem; font-size: .72rem;
+    box-shadow: 0 2px 3px #1E1B2B0a, 0 10px 24px -12px #1E1B2B30;
+    opacity: 0; transform: translateX(20px);
+    transition: opacity .35s, transform .35s cubic-bezier(.2,1.2,.4,1); white-space: nowrap; }
+  .cornerpill b { font-weight: 600; }
+  .cornerpill .cps { font-family: var(--mono); font-size: .6rem; color: var(--ink-faint); }
+  #s5:not([data-p="off"]) .cornerpill { opacity: 1; transform: none; }
+  [data-p="quiet"] .cornerpill .dot { animation: blink2 1.1s ease .4s 2; }
+  @keyframes blink2 { 45% { box-shadow: 0 0 0 5px #6d4bff33; } }
+
+  .pipecard { border: 1px solid var(--hairline); border-radius: 12px; padding: .7rem .85rem;
+    opacity: 0; transform: translateY(10px); transition: opacity .45s, transform .45s; }
+  :is([data-p="pipe"],[data-p="outcome"],[data-p="filed"],[data-p="loop"],
+      [data-p="count"],[data-p="sharpen"]) .pipecard { opacity: 1; transform: none; }
+  .pipecard .ph { font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: .45rem; }
+  .psteps { display: flex; gap: .5rem; flex-wrap: wrap; align-items: baseline;
+    font-family: var(--mono); font-size: .68rem; color: var(--ink-muted); }
+  .psteps b { color: var(--ink); font-weight: 600; }
+  .psteps .sep { color: var(--ink-faint); }
+  .outrow { display: flex; align-items: center; gap: .45rem; margin-top: .7rem;
+    padding-top: .6rem; border-top: 1px dashed var(--hairline);
+    opacity: 0; transition: opacity .4s; }
+  :is([data-p="outcome"],[data-p="filed"],[data-p="loop"],[data-p="count"],[data-p="sharpen"])
+    .outrow { opacity: 1; }
+  .olbl { font-family: var(--mono); font-size: .6rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint); margin-right: .2rem; }
+  .opill { font-family: var(--mono); font-size: .66rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); border-radius: 999px; padding: .24rem .7rem;
+    background: var(--card); transition: background .35s, color .35s, border-color .35s,
+    transform .35s cubic-bezier(.2,1.4,.4,1); }
+  [data-p="outcome"][data-ok="1"] .opill.win,
+  :is([data-p="filed"],[data-p="loop"],[data-p="count"],[data-p="sharpen"]) .opill.win {
+    background: var(--violet); color: var(--card); border-color: var(--violet);
+    transform: scale(1.08); }
+
+  .filedline { font-family: var(--mono); font-size: .7rem; color: var(--violet);
+    opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s; }
+  :is([data-p="filed"],[data-p="loop"],[data-p="count"],[data-p="sharpen"])
+    .filedline { opacity: 1; transform: none; }
+
+  .loopwrap { opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .5s; }
+  :is([data-p="loop"],[data-p="count"],[data-p="sharpen"]) .loopwrap { opacity: 1; transform: none; }
+  .loopnodes { display: flex; align-items: center; justify-content: center; gap: .45rem;
+    flex-wrap: nowrap; }
+  .lnode { font-family: var(--mono); font-size: .64rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); border-radius: 8px; padding: .3rem .6rem;
+    background: var(--card); white-space: nowrap; }
+  .lnode.n1 { animation-delay: 0s; } .lnode.n2 { animation-delay: .8s; }
+  .lnode.n3 { animation-delay: 1.6s; } .lnode.n4 { animation-delay: 2.4s; }
+  :is([data-p="loop"],[data-p="count"],[data-p="sharpen"]) .lnode {
+    animation: nodeglow 3.2s ease infinite; }
+  @keyframes nodeglow {
+    0%, 26%, 100% { border-color: var(--hairline); color: var(--ink-muted); background: var(--card); }
+    8%, 16% { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
+  }
+  .ldash { width: 26px; height: 8px; flex: none; overflow: visible; }
+  .lreturn { display: block; width: min(340px, 90%); height: 26px; margin: .1rem auto 0;
+    overflow: visible; }
+  .looplbl { text-align: center; font-family: var(--mono); font-size: .6rem;
+    color: var(--ink-faint); margin-top: .15rem; }
+
+  .sharpline { font-family: var(--serif); font-size: .92rem; color: var(--ink-muted);
+    border-top: 1px dashed var(--hairline); padding-top: .7rem; max-width: 46ch;
+    opacity: 0; transition: opacity .55s; }
+  [data-p="sharpen"] .sharpline { opacity: 1; }
+  .bump { display: inline-block; animation: bump .5s ease; color: var(--violet); }
+  @keyframes bump { 30% { transform: scale(1.18); } }
+
+  @media (max-width: 480px) {
+    .ans { grid-template-columns: 24px 1fr; }
+    .ans .acol { display: none; }
+    .ctiles { gap: .4rem; }
+    .ctile .cnum { font-size: 1.4rem; }
+    .loopnodes { flex-wrap: wrap; }
+    .schip { white-space: normal; text-align: center; }
+    .srcgrid { gap: .7rem; }
+    .canvas { padding: 1.1rem .9rem 1rem; }
+  }
+
+  .pagefoot { max-width: 1080px; margin: 0 auto; padding: 2rem;
+    font-family: var(--mono); font-size: .68rem; color: var(--ink-faint);
+    border-top: 1px solid var(--hairline); }
+</style>
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <p class="eyebrow">roger3000 · demo — the machine on your corpus · meridian advisory (fictional)</p>
+  <h1>An engine that tells you when it's guessing.</h1>
+  <p>roger3000 runs investor intelligence on your own data — and audits every claim it
+  writes against a source before you see it. Five moments from the machine.</p>
+  <div class="heropills">
+    <span class="pill ok">verified</span>
+    <span class="pill un">unverifiable</span>
+    <span class="pill fab">fabricated</span>
+    <span class="cap">every claim it makes wears one of these — on the record</span>
+  </div>
+  <div class="hint">scroll ↓</div>
+</div>
+
+<!-- ================= 01 INGEST ================= -->
+<section class="row">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · onboarding
+        <span class="right">structuring your corpus</span></div>
+      <div class="canvas" id="s1" data-p="files">
+        <div class="srcgrid">
+          <div class="srccol yours">
+            <div class="lanelbl">yours</div>
+            <span class="schip">deal CRM · export</span>
+            <span class="schip">mandate criteria · pdf</span>
+            <span class="schip">pipeline history · xlsx</span>
+          </div>
+          <div class="srccol market">
+            <div class="lanelbl">market</div>
+            <span class="schip">fund announcements</span>
+            <span class="schip">deal &amp; exit news</span>
+            <span class="schip">team moves</span>
+          </div>
+        </div>
+        <div class="flow">
+          <svg viewBox="0 0 240 60">
+            <path class="arr" d="M62 4 C 80 32, 100 46, 114 54"/>
+            <path class="arr" d="M178 4 C 160 32, 140 46, 126 54"/>
+          </svg>
+        </div>
+        <div class="bigwrap">
+          <div class="bigcard">
+            <div class="bh"><span class="dot"></span>
+              <span class="t1" id="s1t1"></span>
+              <span class="t2">meridian brain</span>
+            </div>
+            <div class="inner">
+              <div class="vrow">
+                <div class="braincard v v1">
+                  <div class="bh"><span class="dot"></span>your entities</div>
+                  <div class="pchips">
+                    <div class="pchip">1,900 relationships — firm ↔ partner ↔ deal</div>
+                    <div class="pchip">your criteria, queryable — no longer a pdf</div>
+                  </div>
+                </div>
+                <div class="braincard v v2">
+                  <div class="bh"><span class="dot"></span>market layer</div>
+                  <div class="pchips">
+                    <div class="pchip">fund closes &amp; deals — refreshed weekly</div>
+                    <div class="pchip">joined to your entities, not headlines</div>
+                  </div>
+                </div>
+              </div>
+              <div class="braincard g">
+                <div class="bh"><span class="dot"></span>the joined view</div>
+                <div class="pchips">
+                  <div class="pchip">who just raised, that fits a live mandate of yours</div>
+                  <div class="pchip">warm paths: your relationships × their new deals</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">01 · ingest</div>
+    <h2>It starts with the corpus you already own.</h2>
+    <p>Your CRM export, your mandate criteria, your pipeline history — files, not an
+    integration project. The engine reads them into one typed graph: firms, funds,
+    partners, deals, and how they connect.</p>
+    <p>External market signal — fund closes, deals, team moves — arrives already joined
+    to your entities. Not a feed of headlines to triage; a fact attached to a firm you
+    know, scored against a mandate you wrote.</p>
+    <div class="fine">extraction schema fitted per corpus · external sources are additive
+    — this is your data structured, not a scrape of it · generated demo data · client fictional</div>
+  </div>
+</section>
+
+<!-- ================= 02 INTELLIGENCE ================= -->
+<section class="row flip">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · ask
+        <span class="right">market intelligence</span></div>
+      <div class="canvas" id="s2" data-p="idle">
+        <div class="chat">
+          <div class="qbub"><span id="s2q"></span><span class="fcaret" id="s2caret"></span></div>
+          <div class="routewrap">
+            <div class="routepill"><span class="dot"></span>routed → <b>&nbsp;market intelligence agent</b></div>
+            <div class="routesub">one of nine capabilities — the router decides, on the record</div>
+          </div>
+          <div class="tdots"><span></span><span></span><span></span></div>
+          <div class="ansrows">
+            <div class="ans a1" style="--w:92%">
+              <div class="arank">1</div>
+              <div>
+                <div class="aname">Hartline Capital</div>
+                <div class="athesis">generalist growth, moved hard into industrial software —
+                  closed Fund III (€180m) in march</div>
+                <div class="aev">3 deals · 12 mo · led 2 · cheque €4–12m</div>
+              </div>
+              <div class="acol"><span class="afit">92</span>
+                <div class="atrack"><span class="abar"></span></div></div>
+            </div>
+            <div class="ans a2" style="--w:84%">
+              <div class="arank">2</div>
+              <div>
+                <div class="aname">Norrfjord Capital</div>
+                <div class="athesis">industrial software is the stated core of Fund IV</div>
+                <div class="aev">2 deals · led 1 · slower pace this year</div>
+              </div>
+              <div class="acol"><span class="afit">84</span>
+                <div class="atrack"><span class="abar"></span></div></div>
+            </div>
+            <div class="ans a3" style="--w:71%">
+              <div class="arank">3</div>
+              <div>
+                <div class="aname">Aster Bridge Partners</div>
+                <div class="athesis">infra-software thesis, edges earlier than your mandate</div>
+                <div class="aev">4 follow-ons · co-led · seed–A</div>
+              </div>
+              <div class="acol"><span class="afit">71</span>
+                <div class="atrack"><span class="abar"></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">02 · intelligence</div>
+    <h2>One question in. The right capability answers.</h2>
+    <p>You ask in plain language. A router reads the question and hands it to the
+    capability built for it — sector landscape, investor matching, portfolio search —
+    each with its own tools and its own evidence. The route is on the record.</p>
+    <p>What comes back is ranked and structured: firms, with the signal that put them
+    there. A capability, not a chatbot.</p>
+    <div class="fine">the router decides, the executors keep their strengths · nine
+    capabilities behind one input · firms fictional · generated demo data</div>
+  </div>
+</section>
+
+<!-- ================= 03 TRUST (centrepiece) ================= -->
+<section class="row">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · report audit
+        <span class="right" id="s3stat">claim auditor</span></div>
+      <div class="canvas" id="s3">
+        <div class="rephead">
+          <span class="reptitle">match report — voltfield × hartline capital</span>
+          <span class="repsub">excerpt · 4 of 23 claims</span>
+        </div>
+        <div class="claims" id="s3claims"></div>
+        <div class="gband" id="s3band">
+          <div class="gmeter"><span class="gseg ok"></span><span class="gseg un"></span><span class="gseg fab"></span></div>
+          <div class="gcounts">
+            <span><i class="k ok"></i>2 verified</span>
+            <span><i class="k un"></i>1 unverifiable — flagged</span>
+            <span><i class="k fab"></i>1 fabricated — withheld</span>
+          </div>
+        </div>
+        <div class="calib" id="s3calib">
+          <div class="calhead">the auditor itself is measured</div>
+          <div class="ctiles">
+            <div class="ctile"><div class="cnum">0.0%</div>
+              <div class="clbl">fabricated<br>false-positive rate</div></div>
+            <div class="ctile"><div class="cnum">100%</div>
+              <div class="clbl">recall on planted<br>fabrications</div></div>
+            <div class="ctile"><div class="cnum">57</div>
+              <div class="clbl">labeled fixtures<br>in the set</div></div>
+          </div>
+          <div class="ccap">measured on a fixed labeled set — a baseline, not a green-light.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">03 · trust</div>
+    <h2>Before a report reaches you, it audits every claim in it.</h2>
+    <p>Every sentence the engine writes is checked against the sources it holds.
+    Verified claims carry their evidence. Unverifiable ones are kept — and flagged as
+    such, so you know exactly where the ground is. Fabricated ones never reach you.</p>
+    <p>And the auditor itself is measured. On a fixed labeled set it currently calls
+    nothing grounded that isn't — 0.0% fabricated false-positives — and catches every
+    planted fabrication. Most AI asks for your trust; this one shows you its score.</p>
+    <div class="fine">the 0.0% · 100% · 57 are the only real numbers on this page —
+    measured on a fixed labeled set; a baseline, not a green-light · claims shown illustrative</div>
+  </div>
+</section>
+
+<!-- ================= 04 OUTREACH ================= -->
+<section class="row flip">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · outreach
+        <span class="right">draft — you send it</span></div>
+      <div class="canvas" id="s4" data-p="off">
+        <div class="ostage">
+          <div class="firmcard">
+            <div class="fhead"><span class="dot"></span><b>Hartline Capital</b>
+              <span class="fsub">elin maes · partner</span></div>
+            <div class="hookchips">
+              <span class="hchip h1">fund III closed · €180m · 12 mar</span>
+              <span class="hchip h2">led 2 grid-software rounds since</span>
+            </div>
+          </div>
+          <div class="mail">
+            <div class="mrow"><span class="mk">to</span>e.maes@hartline.example</div>
+            <div class="mrow"><span class="mk">subj</span>voltfield — grid analytics, on your fund III line</div>
+            <div class="mbody"><span id="s4body"></span><span class="fcaret" id="s4caret"></span></div>
+          </div>
+          <div class="gchips">
+            <span class="gchip">hook · fund III close — tracked 12 mar</span>
+            <span class="gchip">hook · both rounds — deal log</span>
+            <span class="gchip">voice · profiled from mail you approved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">04 · outreach</div>
+    <h2>A first line worth sending — in your voice, on a real hook.</h2>
+    <p>When a firm is worth approaching, the engine drafts the approach — anchored to a
+    signal it actually tracked, a fund close or a deal. Never to flattery it invented.</p>
+    <p>The voice is yours, profiled once from writing you approved. You edit and send;
+    it never sends alone.</p>
+    <div class="fine">every hook traces to a tracked signal · voice profile captured once ·
+    nothing goes out without you · draft fictional</div>
+  </div>
+</section>
+
+<!-- ================= 05 FLYWHEEL ================= -->
+<section class="row">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · outcomes
+        <span class="right" id="s5cnt">labeled outcomes · 214</span></div>
+      <div class="canvas" id="s5" data-p="off">
+        <div class="cornerpill"><span class="dot"></span><b>the loop</b>
+          <span class="cps">one outcome</span></div>
+        <div class="fw">
+          <div class="pipecard">
+            <div class="ph">pipeline — voltfield</div>
+            <div class="psteps"><span>intro 14 may</span><span class="sep">→</span>
+              <span>partner meeting 2 jun</span><span class="sep">→</span>
+              <b>term sheet 26 jun</b></div>
+            <div class="outrow">
+              <span class="olbl">outcome</span>
+              <span class="opill">passed</span>
+              <span class="opill">meeting</span>
+              <span class="opill win">won</span>
+            </div>
+          </div>
+          <div class="filedline">✓ filed — outcome: won · series A · industrial software · label #215</div>
+          <div class="loopwrap">
+            <div class="loopnodes">
+              <span class="lnode n1">match</span>
+              <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
+              <span class="lnode n2">outreach</span>
+              <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
+              <span class="lnode n3">outcome</span>
+              <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
+              <span class="lnode n4">label</span>
+            </div>
+            <svg class="lreturn" viewBox="0 0 340 26">
+              <path class="arr" d="M330 2 C 330 22, 10 22, 10 2"/>
+            </svg>
+            <div class="looplbl">the label feeds the next match</div>
+          </div>
+          <div class="sharpline">Next time a Voltfield-shaped company walks in,
+          Hartline-shaped firms rank higher — because of your outcome, not anyone's scrape.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">05 · flywheel</div>
+    <h2>Every outcome makes the next match sharper.</h2>
+    <p>A meeting happens, a pass, a term sheet — you record it in one tap. Each outcome
+    becomes a labeled example: this startup, this firm, this result.</p>
+    <p>The matcher trains on those labels. That's the part no generic model can copy —
+    it isn't in anyone's training data. It's yours, and it compounds.</p>
+    <div class="fine">outcomes become labels; labels retrain the ranking · the loop is
+    the moat · generated demo data</div>
+  </div>
+</section>
+
+<div class="pagefoot">roger3000 · investor-intelligence demo · everything on this page is
+generated demo data — the client (meridian advisory), the startup (voltfield), and all
+firms, people, deals and figures are fictional · one exception: the three calibration
+figures in 03 (0.0% · 100% · 57) are real measurements from our labeled set.</div>
+
+<script>
+(function () {
+  const rm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const F = rm ? .3 : 1;
+
+  // scroll-triggered: every block starts from frame 0 when it enters view, resets on exit
+  function onView(el, ctrl) {
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) ctrl.start(); else ctrl.stop();
+    }), { threshold: .35 }).observe(el.closest("section") || el);
+  }
+  function stepper(el, seq, onEnter) {
+    let i = 0, t = null;
+    function next() {
+      el.dataset.p = seq[i][0];
+      onEnter && onEnter(seq[i][0]);
+      const hold = seq[i][1] * F + (rm ? 400 : 0);
+      i = (i + 1) % seq.length;
+      t = setTimeout(next, hold);
+    }
+    const ctrl = { start() { this.stop(); i = 0; next(); }, stop() { clearTimeout(t); } };
+    onView(el, ctrl);
+    return ctrl;
+  }
+  // typewriter with caret management
+  function typer(el, caret, text, speed) {
+    let t = null;
+    return {
+      run() {
+        clearInterval(t);
+        if (rm) { el.textContent = text; caret.style.display = "none"; return; }
+        el.textContent = ""; caret.style.display = "inline-block";
+        let i = 0;
+        t = setInterval(() => {
+          el.textContent = text.slice(0, ++i);
+          if (i >= text.length) { clearInterval(t); caret.style.display = "none"; }
+        }, speed);
+      },
+      clear() { clearInterval(t); el.textContent = ""; caret.style.display = "none"; },
+    };
+  }
+
+  /* S1 INGEST — chips arrive by lane, arrows converge, the brain names itself and unfolds */
+  const s1t1 = document.getElementById("s1t1");
+  let s1type = null;
+  stepper(document.getElementById("s1"), [
+    ["files", 1400], ["ext", 1400], ["proc", 1400], ["read", 1900], ["name", 1400],
+    ["alone", 1300], ["grow", 1800], ["unfoldv", 2400], ["unfoldg", 3200],
+  ], p => {
+    if (p === "files") { clearInterval(s1type); s1t1.textContent = ""; }
+    if (p === "read") {
+      const txt = "structuring your corpus…";
+      clearInterval(s1type);
+      if (rm) { s1t1.textContent = txt; return; }
+      let i = 0;
+      s1type = setInterval(() => {
+        s1t1.textContent = txt.slice(0, ++i);
+        if (i >= txt.length) clearInterval(s1type);
+      }, 34);
+    }
+  });
+
+  /* S2 INTELLIGENCE — question types, route pill lands, ranked answers cascade */
+  const q2 = typer(
+    document.getElementById("s2q"), document.getElementById("s2caret"),
+    "Which growth funds went deeper into industrial software this year — and who leads?", 26);
+  stepper(document.getElementById("s2"), [
+    ["idle", 700], ["ask", 3300], ["routed", 1700], ["think", 1300],
+    ["a1", 650], ["a2", 650], ["a3", 2800], ["hold", 2600],
+  ], p => {
+    if (p === "idle") q2.clear();
+    if (p === "ask") q2.run();
+  });
+
+  /* S3 TRUST — the centrepiece: claims stagger in, the auditor walks them one by one,
+     the groundedness band totals, then the measured-calibration panel unfolds */
+  const CLAIMS3 = [
+    { t: "Hartline closed Fund III at €180m in March — its largest vehicle to date.",
+      v: "ok", pill: "verified", src: "fund filing · 2 press items — matched" },
+    { t: "It has led two grid-software rounds since the close.",
+      v: "ok", pill: "verified", src: "tracked deal log — both rounds found" },
+    { t: "Partner Elin Maes has publicly backed a grid-analytics thesis.",
+      v: "un", pill: "unverifiable", src: "no source found — kept, flagged as unverifiable" },
+    { t: "Hartline's portfolio holds a direct Voltfield competitor.",
+      v: "fab", pill: "fabricated", src: "no basis in portfolio data — withheld from the report" },
+  ];
+  const claimsEl = document.getElementById("s3claims");
+  const bandEl = document.getElementById("s3band");
+  const calibEl = document.getElementById("s3calib");
+  const s3stat = document.getElementById("s3stat");
+  let t3 = [], rows3 = [];
+  function clr3() { t3.forEach(clearTimeout); t3 = []; }
+  function later3(fn, ms) { t3.push(setTimeout(fn, ms * F)); }
+  function build3() {
+    claimsEl.innerHTML = ""; rows3 = [];
+    CLAIMS3.forEach(c => {
+      const r = document.createElement("div");
+      r.className = "crow";
+      r.innerHTML = `<div class="ct">${c.t}</div>
+        <div class="cside"><span class="cscan">checking sources…</span>
+        <span class="cpill pill ${c.v}">${c.pill}</span></div>
+        <div class="csrc">${c.src}</div>`;
+      claimsEl.appendChild(r); rows3.push(r);
+    });
+    bandEl.classList.remove("in"); calibEl.classList.remove("in");
+    s3stat.textContent = "claim auditor";
+  }
+  function run3() {
+    build3();
+    rows3.forEach((r, i) => later3(() => r.classList.add("in"), 250 + i * 170));
+    let at = 1400;
+    rows3.forEach((r, i) => {
+      later3(() => {
+        r.classList.add("scan");
+        s3stat.textContent = "auditing claim " + (i + 1) + " of 4";
+      }, at);
+      at += 1350;
+      later3(() => { r.classList.remove("scan"); r.classList.add("done", CLAIMS3[i].v); }, at);
+      at += 500;
+    });
+    later3(() => { bandEl.classList.add("in");
+      s3stat.textContent = "2 ✓ · 1 flagged · 1 withheld"; }, at + 300);
+    later3(() => { calibEl.classList.add("in");
+      s3stat.textContent = "measured — not assumed"; }, at + 2100);
+    later3(run3, at + 8400);
+  }
+  onView(claimsEl, { start() { clr3(); run3(); }, stop() { clr3(); } });
+
+  /* S4 OUTREACH — firm card, hooks light up, the draft types in your voice, grounding chips land */
+  const b4 = typer(
+    document.getElementById("s4body"), document.getElementById("s4caret"),
+    "Congratulations on the Fund III close. You've led both grid-software rounds since — " +
+    "Voltfield sits on that same line: analytics for grid operators, live with three DSOs, " +
+    "raising an A.", 17);
+  stepper(document.getElementById("s4"), [
+    ["quiet", 1500], ["hook", 1900], ["draft", 4400], ["grounded", 2400], ["hold", 3000],
+  ], p => {
+    if (p === "quiet") b4.clear();
+    if (p === "draft") b4.run();
+  });
+
+  /* S5 FLYWHEEL — outcome tapped, label filed, the loop runs, the counter ticks */
+  const s5 = document.getElementById("s5");
+  const s5cnt = document.getElementById("s5cnt");
+  stepper(s5, [
+    ["quiet", 1300], ["pipe", 1900], ["outcome", 2100], ["filed", 2100],
+    ["loop", 2700], ["count", 1900], ["sharpen", 3600],
+  ], p => {
+    s5.dataset.ok = "0";
+    if (p === "quiet") { s5cnt.textContent = "labeled outcomes · 214"; s5cnt.classList.remove("bump"); }
+    if (p === "outcome") setTimeout(() => {
+      if (s5.dataset.p === "outcome") s5.dataset.ok = "1"; }, 1200 * F);
+    if (p === "count") { s5cnt.textContent = "labeled outcomes · 215"; s5cnt.classList.add("bump"); }
+  });
+})();
+</script>
