@@ -117,16 +117,20 @@
   :is([data-p="ext"],[data-p="proc"],[data-p="read"],[data-p="name"])
     .srccol.market :is(.schip,.lanelbl) { opacity: 1; transform: none; }
   :is([data-p="proc"],[data-p="read"],[data-p="name"]) .srcgrid .schip { opacity: .4; }
+  /* Hidden lanes/flow use display:none (NOT visibility:hidden) so they stop
+     reserving vertical space — otherwise the empty rows above the brain card
+     push it to the bottom of the frame instead of the middle. */
   :is([data-p="alone"],[data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"])
-    :is(.srcgrid,.flow) { visibility: hidden; }
+    :is(.srcgrid,.flow) { display: none; }
 
-  .flow { display: grid; place-items: center; height: 60px; }
+  .flow { display: none; place-items: center; height: 60px; }
   .flow svg { width: 240px; height: 100%; opacity: 0; transition: opacity .4s; overflow: visible; }
+  :is([data-p="proc"],[data-p="read"],[data-p="name"]) .flow { display: grid; }
   :is([data-p="proc"],[data-p="read"],[data-p="name"]) .flow svg { opacity: 1; }
 
-  .bigwrap { display: grid; place-items: center; visibility: hidden; }
+  .bigwrap { display: none; place-items: center; }
   :is([data-p="proc"],[data-p="read"],[data-p="name"],[data-p="alone"],
-      [data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigwrap { visibility: visible; }
+      [data-p="grow"],[data-p="unfoldv"],[data-p="unfoldg"]) .bigwrap { display: grid; }
   .bigcard { width: 232px; background: var(--card); border: 1px solid var(--hairline);
     border-radius: 14px; padding: .8rem .95rem;
     opacity: 0; scale: .85;
