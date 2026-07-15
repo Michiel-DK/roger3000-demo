@@ -1,4 +1,4 @@
-<title>roger3000 demo — the machine, in five moments</title>
+<title>roger3000 demo — the machine, in six moments</title>
 <!--
   DESIGN DIRECTION (committed before build — ui-maker step 2)
   · Genre: editorial scrollytelling pitch piece — deliberately editorial (serif display is earned, not reflexive).
@@ -11,7 +11,7 @@
   · Motion: one mode — calm ease/spring reveals, dashed-flow arrows, typewriter for "the machine writing".
     Scroll-into-view via IntersectionObserver + stepper state machine; resets on exit; honors reduced-motion.
   · Narrative state: fictional client "Meridian Advisory"; one story threads the moments —
-    startup Voltfield × firm Hartline Capital (ask → report audit → outreach → outcome).
+    startup Voltfield × firm Hartline Capital (pitch → match → audit → ask → write-back → outcome).
   · The ONLY real numbers on the page are the three calibration figures in moment 03 (0.0% / 100% / 57).
 -->
 <style>
@@ -174,8 +174,8 @@
     border-radius: 14px 14px 4px 14px; padding: .55rem .95rem; min-height: 1.4em;
     opacity: 0; transform: translateY(8px) scale(.92); transform-origin: bottom right;
     transition: opacity .35s, transform .4s cubic-bezier(.25,1.2,.4,1); }
-  :is([data-p="ask"],[data-p="routed"],[data-p="think"],[data-p="a1"],[data-p="a2"],
-      [data-p="a3"],[data-p="hold"]) .qbub { opacity: 1; transform: none; }
+  :is([data-p="ask"],[data-p="think"],[data-p="answer"],[data-p="pushback"],[data-p="hold"])
+      .qbub { opacity: 1; transform: none; }
 
   .routewrap { justify-self: start; display: grid; gap: .3rem;
     opacity: 0; transform: translateY(8px) scale(.9); transform-origin: top left;
@@ -222,6 +222,28 @@
   :is([data-p="a1"],[data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a1 .abar { width: var(--w); }
   :is([data-p="a2"],[data-p="a3"],[data-p="hold"]) .ans.a2 .abar { width: var(--w); }
   :is([data-p="a3"],[data-p="hold"]) .ans.a3 .abar { width: var(--w); }
+
+  /* pitchdeck input + report bridge (intelligence) */
+  .deckwrap { justify-self: end; opacity: 0; transform: translateY(8px) scale(.94);
+    transform-origin: bottom right; transition: opacity .4s, transform .45s cubic-bezier(.25,1.2,.4,1); }
+  #s2:not([data-p="idle"]) .deckwrap { opacity: 1; transform: none; }
+  .deckcard { display: flex; align-items: center; gap: .6rem; background: var(--card);
+    border: 1px solid var(--hairline); border-radius: 12px; padding: .55rem .75rem;
+    transition: border-color .5s; }
+  #s2:is([data-p="saved"],[data-p="routed"],[data-p="think"],[data-p="a1"],[data-p="a2"],
+      [data-p="a3"],[data-p="hold"]) .deckcard { border-color: var(--violet); }
+  .deckicon { display: grid; place-items: center; width: 30px; height: 30px; flex: none;
+    border-radius: 8px; background: var(--violet-soft); color: var(--violet); font-size: .95rem; }
+  .deckmeta { display: grid; line-height: 1.35; }
+  .deckmeta b { font-size: .82rem; }
+  .decksub { font-family: var(--mono); font-size: .6rem; color: var(--ink-faint); }
+  .deckstate { margin-left: .3rem; font-family: var(--mono); font-size: .58rem;
+    color: var(--violet); white-space: nowrap; }
+  .reportline { justify-self: start; font-family: var(--mono); font-size: .62rem;
+    color: var(--ink-muted); border-top: 1px dashed var(--hairline); padding-top: .6rem;
+    width: 100%; opacity: 0; transform: translateY(4px); transition: opacity .5s, transform .5s; }
+  .reportline b { color: var(--violet); }
+  :is([data-p="a3"],[data-p="hold"]) .reportline { opacity: 1; transform: none; }
 
   /* =========== S3 TRUST (centrepiece) =========== */
   #s3 { min-height: 580px; }
@@ -288,54 +310,36 @@
   .ccap { font-family: var(--mono); font-size: .62rem; color: var(--ink-muted);
     border-top: 1px dashed var(--hairline); padding-top: .55rem; }
 
-  /* =========== S4 OUTREACH =========== */
-  #s4 { min-height: 400px; }
-  .ostage { display: grid; gap: .85rem; align-content: start; }
-  .firmcard { border: 1px solid var(--hairline); border-radius: 12px; padding: .7rem .85rem;
-    opacity: 0; transform: translateY(10px) scale(.95);
-    transition: opacity .4s, transform .45s cubic-bezier(.25,1.2,.4,1); }
-  :is([data-p="quiet"],[data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"])
-    .firmcard { opacity: 1; transform: none; }
-  .fhead { display: flex; align-items: baseline; gap: .55rem; }
-  .fhead .dot { align-self: center; }
-  .fhead b { font-size: .84rem; }
-  .fhead .fsub { font-family: var(--mono); font-size: .62rem; color: var(--ink-faint);
-    margin-left: auto; }
-  .hookchips { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .55rem; }
-  .hchip { font-family: var(--mono); font-size: .62rem; color: var(--ink-muted);
-    border: 1px solid var(--hairline); background: var(--paper); border-radius: 7px;
-    padding: .26rem .55rem; transition: border-color .45s, background .45s, color .45s; }
-  :is([data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"]) .hchip {
-    border-color: #6d4bff55; background: var(--violet-soft); color: var(--ink); }
-  :is([data-p="hook"],[data-p="draft"],[data-p="grounded"],[data-p="hold"]) .hchip.h2 {
-    transition-delay: .25s; }
-
-  .mail { border: 1px solid var(--hairline); border-radius: 12px; background: var(--paper);
-    padding: .7rem .85rem .8rem; opacity: 0; transform: translateY(10px);
-    transition: opacity .4s, transform .45s; }
-  :is([data-p="draft"],[data-p="grounded"],[data-p="hold"]) .mail { opacity: 1; transform: none; }
-  .mrow { font-family: var(--mono); font-size: .64rem; color: var(--ink-muted);
-    padding: .2rem 0; border-bottom: 1px dashed var(--hairline); }
-  .mrow .mk { display: inline-block; width: 3.6em; color: var(--ink-faint);
-    text-transform: uppercase; letter-spacing: .08em; font-size: .58rem; }
-  .mbody { font-family: var(--serif); font-size: .92rem; line-height: 1.5;
-    padding-top: .55rem; min-height: 5.6em; }
-
-  .gchips { display: flex; gap: .45rem; flex-wrap: wrap; }
-  .gchip { display: inline-flex; align-items: center; gap: .4rem;
-    font-family: var(--mono); font-size: .6rem; color: var(--ink-muted);
-    border: 1px solid var(--hairline); border-radius: 999px; padding: .24rem .6rem;
-    background: var(--card);
-    opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
-  .gchip::before { content: ""; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--violet); }
-  :is([data-p="grounded"],[data-p="hold"]) .gchip { opacity: 1; transform: none; }
-  :is([data-p="grounded"],[data-p="hold"]) .gchip:nth-child(2) { transition-delay: .18s; }
-  :is([data-p="grounded"],[data-p="hold"]) .gchip:nth-child(3) { transition-delay: .36s; }
+  /* =========== S4 BRAIN =========== */
+  #s4 { min-height: 420px; }
+  .brainans { border: 1px solid var(--hairline); border-radius: 12px; background: var(--paper);
+    padding: .7rem .85rem; justify-self: start; max-width: 42ch;
+    opacity: 0; transform: translateY(10px); transition: opacity .4s, transform .45s; }
+  :is([data-p="answer"],[data-p="pushback"],[data-p="hold"]) .brainans { opacity: 1; transform: none; }
+  .bansbody { font-family: var(--serif); font-size: .92rem; line-height: 1.5; min-height: 3.6em; }
+  .bsrcs { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem;
+    padding-top: .55rem; border-top: 1px dashed var(--hairline); }
+  .bsrc { display: inline-flex; align-items: center; gap: .35rem;
+    font-family: var(--mono); font-size: .58rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); border-radius: 999px; padding: .2rem .55rem;
+    background: var(--card); opacity: 0; transform: translateY(4px);
+    transition: opacity .4s, transform .4s; }
+  .bsrc::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+  :is([data-p="answer"],[data-p="pushback"],[data-p="hold"]) .bsrc { opacity: 1; transform: none; }
+  :is([data-p="answer"],[data-p="pushback"],[data-p="hold"]) .bsrc:nth-child(2) { transition-delay: .16s; }
+  .pushback { justify-self: start; max-width: 42ch; border: 1px solid #A2761B45;
+    background: #A2761B0d; border-radius: 12px; padding: .6rem .8rem;
+    opacity: 0; transform: translateY(10px); transition: opacity .4s, transform .45s; }
+  :is([data-p="pushback"],[data-p="hold"]) .pushback { opacity: 1; transform: none; }
+  .pbtag { font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--warn); margin-bottom: .35rem; }
+  .pbbody { font-family: var(--serif); font-size: .88rem; line-height: 1.5; color: var(--ink); }
+  .pbbody s { color: var(--ink-faint); text-decoration-color: #A2761B73; }
+  .pbbody b { color: var(--warn); font-weight: 600; }
 
   /* =========== S5 FLYWHEEL =========== */
-  #s5 { min-height: 430px; }
-  .fw { display: grid; gap: .85rem; align-content: start; }
+  #s5 { min-height: 460px; }
+  .fw { display: grid; gap: .85rem; align-content: start; margin-top: 2rem; }
   .cornerpill { position: absolute; top: 10px; right: 10px; display: flex; align-items: center;
     gap: .4rem; background: var(--card); border: 1px solid var(--hairline); border-radius: 10px;
     padding: .38rem .65rem .38rem .42rem; font-size: .72rem;
@@ -407,6 +411,58 @@
   .bump { display: inline-block; animation: bump .5s ease; color: var(--violet); }
   @keyframes bump { 30% { transform: scale(1.18); } }
 
+  /* =========== S6 WRITE-BACK =========== */
+  #s6 { min-height: 400px; }
+  .wbstage { display: grid; grid-template-columns: 1fr 64px 1.2fr;
+    grid-template-rows: auto auto; align-items: start; gap: .9rem 0; }
+  .wbcard, .wbin { border: 1px solid var(--hairline); border-radius: 12px; padding: .7rem .8rem;
+    background: var(--card); grid-column: 1; opacity: 0; transform: translateY(10px) scale(.96);
+    transition: opacity .4s, transform .45s cubic-bezier(.25,1.2,.4,1); }
+  .wbcard { grid-row: 1; }
+  .wbin { grid-row: 2; border-style: dashed; }
+  #s6:not([data-p="off"]) .wbcard { opacity: 1; transform: none; }
+  #s6:is([data-p="sync"],[data-p="guard"],[data-p="hold"]) .wbin { opacity: 1; transform: none; }
+  .wbcard .wbh, .wbin .wbh { display: flex; align-items: center; gap: .45rem; font-size: .82rem;
+    font-weight: 600; }
+  .wbcard .wbmeta, .wbin .wbmeta { font-family: var(--mono); font-size: .62rem;
+    color: var(--ink-muted); margin: .4rem 0 0; line-height: 1.6; }
+  .wbcard .wbmeta { margin-bottom: .5rem; }
+  .wbflow { grid-column: 2; align-self: center; display: grid; place-items: center; }
+  .wbflow.wf1 { grid-row: 1; }
+  .wbflow.wf2 { grid-row: 2; }
+  .wbflow svg { width: 60px; height: 44px; overflow: visible; opacity: 0;
+    transition: opacity .4s; }
+  #s6:is([data-p="write"],[data-p="guard"],[data-p="hold"]) .wf1 svg { opacity: 1; }
+  #s6:is([data-p="sync"],[data-p="guard"],[data-p="hold"]) .wf2 svg { opacity: 1; }
+  .crmpanel { grid-column: 3; grid-row: 1 / 3; align-self: center;
+    border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .4s, transform .45s, border-color .5s; }
+  #s6:not([data-p="off"]) .crmpanel { opacity: 1; transform: none; }
+  :is([data-p="write"],[data-p="guard"],[data-p="hold"]) .crmpanel { border-color: var(--violet); }
+  .crmhead { font-family: var(--mono); font-size: .62rem; color: var(--ink-muted);
+    padding: .5rem .7rem; border-bottom: 1px solid var(--hairline); background: var(--paper); }
+  .crmhead b { color: var(--ink); }
+  .crmbody { padding: .6rem .7rem; display: grid; gap: .35rem; }
+  .crmrow { font-family: var(--mono); font-size: .64rem; color: var(--ink-muted); }
+  .crmrow .ck { color: var(--ink-faint); display: inline-block; width: 4em; }
+  .wbnote { font-family: var(--mono); font-size: .63rem; color: var(--violet);
+    background: var(--violet-soft); border: 1px solid #6d4bff2e; border-radius: 8px;
+    line-height: 1.5; max-height: 0; opacity: 0; overflow: hidden; padding: 0 .55rem;
+    transition: max-height .55s, opacity .4s, padding .4s; }
+  :is([data-p="write"],[data-p="guard"],[data-p="hold"]) .wbnote {
+    max-height: 7em; opacity: 1; padding: .45rem .55rem; }
+  .wbguards { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: 1rem; }
+  .wbchip { display: inline-flex; align-items: center; gap: .4rem;
+    font-family: var(--mono); font-size: .6rem; color: var(--ink-muted);
+    border: 1px solid var(--hairline); border-radius: 999px; padding: .24rem .6rem;
+    background: var(--card); opacity: 0; transform: translateY(6px);
+    transition: opacity .4s, transform .4s; }
+  .wbchip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+  :is([data-p="guard"],[data-p="hold"]) .wbchip { opacity: 1; transform: none; }
+  :is([data-p="guard"],[data-p="hold"]) .wbchip:nth-child(2) { transition-delay: .16s; }
+  :is([data-p="guard"],[data-p="hold"]) .wbchip:nth-child(3) { transition-delay: .32s; }
+
   @media (max-width: 480px) {
     .ans { grid-template-columns: 24px 1fr; }
     .ans .acol { display: none; }
@@ -416,6 +472,9 @@
     .schip { white-space: normal; text-align: center; }
     .srcgrid { gap: .7rem; }
     .canvas { padding: 1.1rem .9rem 1rem; }
+    .wbstage { grid-template-columns: 1fr; grid-template-rows: none; gap: .7rem; }
+    .wbcard, .wbin, .crmpanel { grid-column: 1; grid-row: auto; }
+    .wbflow { display: none; }
   }
 
   .pagefoot { max-width: 1080px; margin: 0 auto; padding: 2rem;
@@ -425,10 +484,12 @@
 
 <!-- ================= HERO ================= -->
 <div class="hero">
-  <p class="eyebrow">roger3000 · demo — the machine on your corpus · meridian advisory (fictional)</p>
-  <h1>An engine that tells you when it's guessing.</h1>
-  <p>roger3000 runs investor intelligence on your own data — and audits every claim it
-  writes against a source before you see it. Five moments from the machine.</p>
+  <p class="eyebrow">roger3000 · demo — the intelligence layer between your data and your CRM · meridian advisory (fictional)</p>
+  <h1>The intelligence layer between your data and your CRM.</h1>
+  <p>roger3000 reads what you already own — CRM, documents, database — runs investor
+  intelligence over it, and writes the enriched result back where you work. And it tells
+  you when it's guessing: every claim is audited against a source before you see it.
+  Six moments from the machine.</p>
   <div class="heropills">
     <span class="pill ok">verified</span>
     <span class="pill un">unverifiable</span>
@@ -448,9 +509,9 @@
         <div class="srcgrid">
           <div class="srccol yours">
             <div class="lanelbl">yours</div>
-            <span class="schip">deal CRM · export</span>
-            <span class="schip">mandate criteria · pdf</span>
-            <span class="schip">pipeline history · xlsx</span>
+            <span class="schip">your CRM</span>
+            <span class="schip">your documents</span>
+            <span class="schip">your database</span>
           </div>
           <div class="srccol market">
             <div class="lanelbl">market</div>
@@ -477,7 +538,7 @@
                   <div class="bh"><span class="dot"></span>your entities</div>
                   <div class="pchips">
                     <div class="pchip">1,900 relationships — firm ↔ partner ↔ deal</div>
-                    <div class="pchip">your criteria, queryable — no longer a pdf</div>
+                    <div class="pchip">your criteria, queryable — not buried in docs</div>
                   </div>
                 </div>
                 <div class="braincard v v2">
@@ -502,16 +563,16 @@
     </div>
   </div>
   <div class="txt">
-    <div class="kicker">01 · ingest</div>
-    <h2>It starts with the corpus you already own.</h2>
-    <p>Your CRM export, your mandate criteria, your pipeline history — files, not an
-    integration project. The engine reads them into one typed graph: firms, funds,
-    partners, deals, and how they connect.</p>
+    <div class="kicker">01 · read</div>
+    <h2>It starts with what you already own.</h2>
+    <p>Your CRM, your documents, your database — read in place, not an integration
+    project. The engine reads them into one typed graph: firms, funds, partners, deals,
+    and how they connect.</p>
     <p>External market signal — fund closes, deals, team moves — arrives already joined
     to your entities. Not a feed of headlines to triage; a fact attached to a firm you
     know, scored against a mandate you wrote.</p>
-    <div class="fine">extraction schema fitted per corpus · external sources are additive
-    — this is your data structured, not a scrape of it · generated demo data · client fictional</div>
+    <div class="fine">reads your data in place · external sources are additive — this is
+    your data structured, not a scrape of it · generated demo data · client fictional</div>
   </div>
 </section>
 
@@ -519,14 +580,21 @@
 <section class="row flip">
   <div class="stagecell">
     <div class="frame">
-      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · ask
-        <span class="right">market intelligence</span></div>
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · match
+        <span class="right">pitch → investors</span></div>
       <div class="canvas" id="s2" data-p="idle">
         <div class="chat">
-          <div class="qbub"><span id="s2q"></span><span class="fcaret" id="s2caret"></span></div>
+          <div class="deckwrap">
+            <div class="deckcard">
+              <span class="deckicon">▤</span>
+              <div class="deckmeta"><b>Voltfield — pitch.pdf</b>
+                <span class="decksub">grid analytics · Series A</span></div>
+              <span class="deckstate" id="s2state"></span>
+            </div>
+          </div>
           <div class="routewrap">
-            <div class="routepill"><span class="dot"></span>routed → <b>&nbsp;market intelligence agent</b></div>
-            <div class="routesub">one of nine capabilities — the router decides, on the record</div>
+            <div class="routepill"><span class="dot"></span>routed → <b>&nbsp;intelligence agent</b></div>
+            <div class="routesub">matching the deck against every firm it knows</div>
           </div>
           <div class="tdots"><span></span><span></span><span></span></div>
           <div class="ansrows">
@@ -562,20 +630,21 @@
                 <div class="atrack"><span class="abar"></span></div></div>
             </div>
           </div>
+          <div class="reportline">▤ <b>a deep report generated for each match</b></div>
         </div>
       </div>
     </div>
   </div>
   <div class="txt">
     <div class="kicker">02 · intelligence</div>
-    <h2>One question in. The right capability answers.</h2>
-    <p>You ask in plain language. A router reads the question and hands it to the
-    capability built for it — sector landscape, investor matching, portfolio search —
-    each with its own tools and its own evidence. The route is on the record.</p>
-    <p>What comes back is ranked and structured: firms, with the signal that put them
-    there. A capability, not a chatbot.</p>
-    <div class="fine">the router decides, the executors keep their strengths · nine
-    capabilities behind one input · firms fictional · generated demo data</div>
+    <h2>Drop in a pitch deck. Get the investors that fit.</h2>
+    <p>Every deck becomes a saved artefact — its own workspace, kept per pitch. The
+    engine reads it, matches it against the firms it knows, and returns a ranked report:
+    the investors that fit, each with the signal that put them there.</p>
+    <p>Not a list of names — a report you can stand behind, because every claim in it is
+    checked before you see it.</p>
+    <div class="fine">one artefact per pitch, persisted · ranked on fit, with evidence ·
+    firms fictional · generated demo data</div>
   </div>
 </section>
 
@@ -628,50 +697,109 @@
   </div>
 </section>
 
-<!-- ================= 04 OUTREACH ================= -->
+<!-- ================= 04 BRAIN ================= -->
 <section class="row flip">
   <div class="stagecell">
     <div class="frame">
-      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · outreach
-        <span class="right">draft — you send it</span></div>
-      <div class="canvas" id="s4" data-p="off">
-        <div class="ostage">
-          <div class="firmcard">
-            <div class="fhead"><span class="dot"></span><b>Hartline Capital</b>
-              <span class="fsub">elin maes · partner</span></div>
-            <div class="hookchips">
-              <span class="hchip h1">fund III closed · €180m · 12 mar</span>
-              <span class="hchip h2">led 2 grid-software rounds since</span>
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · ask
+        <span class="right">brain — grounded</span></div>
+      <div class="canvas" id="s4" data-p="idle">
+        <div class="chat">
+          <div class="qbub"><span id="s4q"></span><span class="fcaret" id="s4caret"></span></div>
+          <div class="tdots"><span></span><span></span><span></span></div>
+          <div class="brainans">
+            <div class="bansbody"><span id="s4a"></span><span class="fcaret" id="s4acaret"></span></div>
+            <div class="bsrcs">
+              <span class="bsrc">source · fund-filing.pdf</span>
+              <span class="bsrc">source · deal-log</span>
             </div>
           </div>
-          <div class="mail">
-            <div class="mrow"><span class="mk">to</span>e.maes@hartline.example</div>
-            <div class="mrow"><span class="mk">subj</span>voltfield — grid analytics, on your fund III line</div>
-            <div class="mbody"><span id="s4body"></span><span class="fcaret" id="s4caret"></span></div>
-          </div>
-          <div class="gchips">
-            <span class="gchip">hook · fund III close — tracked 12 mar</span>
-            <span class="gchip">hook · both rounds — deal log</span>
-            <span class="gchip">voice · profiled from mail you approved</span>
+          <div class="pushback">
+            <div class="pbtag">pushes back</div>
+            <div class="pbbody">One correction: <s>Hartline led your last two rounds</s> — the
+              deal log shows it <b>co-invested, never led</b>. Want the firms that actually led?</div>
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="txt">
-    <div class="kicker">04 · outreach</div>
-    <h2>A first line worth sending — in your voice, on a real hook.</h2>
-    <p>When a firm is worth approaching, the engine drafts the approach — anchored to a
-    signal it actually tracked, a fund close or a deal. Never to flattery it invented.</p>
-    <p>The voice is yours, profiled once from writing you approved. You edit and send;
-    it never sends alone.</p>
-    <div class="fine">every hook traces to a tracked signal · voice profile captured once ·
-    nothing goes out without you · draft fictional</div>
+    <div class="kicker">04 · brain</div>
+    <h2>Ask anything — it answers only from your sources.</h2>
+    <p>Ask in plain language. The brain answers from your own documents, and every claim
+    cites the source it came from. If the documents don't hold the answer, it says so and
+    abstains — it never fills the gap with a guess.</p>
+    <p>So when your premise isn't in the sources, it won't play along — it shows you what
+    the documents actually say. The same grounding standard the claim auditor holds your
+    reports to in 03.</p>
+    <div class="fine">answers cite their source · abstains rather than guess · one grounding
+    standard, shared with the 03 claim auditor · generated demo data · client fictional</div>
   </div>
 </section>
 
-<!-- ================= 05 FLYWHEEL ================= -->
+<!-- ================= 05 WRITE-BACK ================= -->
 <section class="row">
+  <div class="stagecell">
+    <div class="frame">
+      <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · sync
+        <span class="right">layer ⇄ Folk</span></div>
+      <div class="canvas" id="s6" data-p="off">
+        <div class="wbstage">
+          <div class="wbcard">
+            <div class="wbh"><span class="dot"></span>enriched match</div>
+            <div class="wbmeta">Voltfield × Hartline · fit 92<br>warm path · 2 tracked signals</div>
+            <span class="pill ok">audited · grounded</span>
+          </div>
+          <div class="wbflow wf1">
+            <svg class="aout" viewBox="0 0 60 44">
+              <path class="arr" d="M5 7 L47 36"/>
+              <path class="arr" d="M47 36 L36 35 M47 36 L45 25"/>
+            </svg>
+          </div>
+          <div class="crmpanel">
+            <div class="crmhead"><b>your CRM · Folk</b> · Hartline Capital</div>
+            <div class="crmbody">
+              <div class="crmrow"><span class="ck">stage</span>qualified</div>
+              <div class="crmrow"><span class="ck">owner</span>you</div>
+              <div class="crmrow"><span class="ck">sector</span>grid analytics</div>
+              <div class="wbnote"><span id="s6note"></span><span class="fcaret" id="s6caret"></span></div>
+            </div>
+          </div>
+          <div class="wbflow wf2">
+            <svg class="ain" viewBox="0 0 60 44">
+              <path class="arr" d="M55 7 L13 36"/>
+              <path class="arr" d="M13 36 L24 35 M13 36 L15 25"/>
+            </svg>
+          </div>
+          <div class="wbin">
+            <div class="wbh"><span class="dot"></span>from Folk · into the layer</div>
+            <div class="wbmeta">stage → meeting booked<br>+ new contact on the deal</div>
+          </div>
+        </div>
+        <div class="wbguards">
+          <span class="wbchip">dry-run preview</span>
+          <span class="wbchip">dedupe-safe</span>
+          <span class="wbchip">you approve the sync</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <div class="kicker">05 · write-back</div>
+    <h2>It syncs both ways with your CRM.</h2>
+    <p>The engine writes the enriched result — the fit, the warm path, the tracked signals
+    — straight back into your CRM record, so the tool your team already lives in starts
+    surfacing deals it couldn't see. And it reads their moves back: a stage change, a new
+    contact — the layer stays in step.</p>
+    <p>Every write is previewed, dedupe-safe, and yours to approve — it never touches your
+    pipeline on its own.</p>
+    <div class="fine">two-way sync with your CRM · dry-run first · nothing writes without
+    you · generated demo data · client fictional</div>
+  </div>
+</section>
+
+<!-- ================= 06 FLYWHEEL ================= -->
+<section class="row flip">
   <div class="stagecell">
     <div class="frame">
       <div class="chrome"><span class="dot"></span><b>meridian advisory</b> · outcomes
@@ -681,7 +809,7 @@
           <span class="cps">one outcome</span></div>
         <div class="fw">
           <div class="pipecard">
-            <div class="ph">pipeline — voltfield</div>
+            <div class="ph">pipeline — voltfield · in your CRM (Folk)</div>
             <div class="psteps"><span>intro 14 may</span><span class="sep">→</span>
               <span>partner meeting 2 jun</span><span class="sep">→</span>
               <b>term sheet 26 jun</b></div>
@@ -697,7 +825,7 @@
             <div class="loopnodes">
               <span class="lnode n1">match</span>
               <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
-              <span class="lnode n2">outreach</span>
+              <span class="lnode n2">write-back</span>
               <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
               <span class="lnode n3">outcome</span>
               <svg class="ldash" viewBox="0 0 26 8"><path class="arr" d="M1 4 H25"/></svg>
@@ -706,7 +834,7 @@
             <svg class="lreturn" viewBox="0 0 340 26">
               <path class="arr" d="M330 2 C 330 22, 10 22, 10 2"/>
             </svg>
-            <div class="looplbl">the label feeds the next match</div>
+            <div class="looplbl">outcome in your CRM → label in the layer → sharper match</div>
           </div>
           <div class="sharpline">Next time a Voltfield-shaped company walks in,
           Hartline-shaped firms rank higher — because of your outcome, not anyone's scrape.</div>
@@ -715,14 +843,15 @@
     </div>
   </div>
   <div class="txt">
-    <div class="kicker">05 · flywheel</div>
+    <div class="kicker">06 · flywheel</div>
     <h2>Every outcome makes the next match sharper.</h2>
-    <p>A meeting happens, a pass, a term sheet — you record it in one tap. Each outcome
-    becomes a labeled example: this startup, this firm, this result.</p>
-    <p>The matcher trains on those labels. That's the part no generic model can copy —
-    it isn't in anyone's training data. It's yours, and it compounds.</p>
-    <div class="fine">outcomes become labels; labels retrain the ranking · the loop is
-    the moat · generated demo data</div>
+    <p>The outcome happens in your CRM — a pass, a meeting, a term sheet. The layer reads
+    it back and turns it into a labeled example: this startup, this firm, this result.</p>
+    <p>The matcher trains on those labels. That's the part no generic model can copy — it
+    isn't in anyone's training data. It lives in the layer, on your outcomes, and it
+    compounds.</p>
+    <div class="fine">outcomes live in your CRM · the layer turns them into labels that
+    retrain the ranking · generated demo data</div>
   </div>
 </section>
 
@@ -793,16 +922,14 @@ figures in 03 (0.0% · 100% · 57) are real measurements from our labeled set.</
     }
   });
 
-  /* S2 INTELLIGENCE — question types, route pill lands, ranked answers cascade */
-  const q2 = typer(
-    document.getElementById("s2q"), document.getElementById("s2caret"),
-    "Which growth funds went deeper into industrial software this year — and who leads?", 26);
+  /* S2 INTELLIGENCE — pitch deck drops, saves as an artefact, ranked report cascades */
+  const s2state = document.getElementById("s2state");
   stepper(document.getElementById("s2"), [
-    ["idle", 700], ["ask", 3300], ["routed", 1700], ["think", 1300],
-    ["a1", 650], ["a2", 650], ["a3", 2800], ["hold", 2600],
+    ["idle", 700], ["drop", 1500], ["saved", 1700], ["routed", 1600], ["think", 1400],
+    ["a1", 650], ["a2", 650], ["a3", 3000], ["hold", 2400],
   ], p => {
-    if (p === "idle") q2.clear();
-    if (p === "ask") q2.run();
+    if (p === "idle" || p === "drop") s2state.textContent = "";
+    if (p === "saved") s2state.textContent = "✓ saved · pitch artefact";
   });
 
   /* S3 TRUST — the centrepiece: claims stagger in, the auditor walks them one by one,
@@ -859,17 +986,20 @@ figures in 03 (0.0% · 100% · 57) are real measurements from our labeled set.</
   }
   onView(claimsEl, { start() { clr3(); run3(); }, stop() { clr3(); } });
 
-  /* S4 OUTREACH — firm card, hooks light up, the draft types in your voice, grounding chips land */
-  const b4 = typer(
-    document.getElementById("s4body"), document.getElementById("s4caret"),
-    "Congratulations on the Fund III close. You've led both grid-software rounds since — " +
-    "Voltfield sits on that same line: analytics for grid operators, live with three DSOs, " +
-    "raising an A.", 17);
+  /* S4 BRAIN — question types, routes, answers with sources, then pushes back on the premise */
+  const q4 = typer(
+    document.getElementById("s4q"), document.getElementById("s4caret"),
+    "Hartline led our last two rounds — who else in their circle should we talk to?", 24);
+  const a4 = typer(
+    document.getElementById("s4a"), document.getElementById("s4acaret"),
+    "Hartline closed Fund III (€180m) in March and has backed two grid-software rounds since.", 18);
   stepper(document.getElementById("s4"), [
-    ["quiet", 1500], ["hook", 1900], ["draft", 4400], ["grounded", 2400], ["hold", 3000],
+    ["idle", 700], ["ask", 3200], ["think", 1500],
+    ["answer", 4200], ["pushback", 4200], ["hold", 2600],
   ], p => {
-    if (p === "quiet") b4.clear();
-    if (p === "draft") b4.run();
+    if (p === "idle") { q4.clear(); a4.clear(); }
+    if (p === "ask") q4.run();
+    if (p === "answer") a4.run();
   });
 
   /* S5 FLYWHEEL — outcome tapped, label filed, the loop runs, the counter ticks */
@@ -884,6 +1014,17 @@ figures in 03 (0.0% · 100% · 57) are real measurements from our labeled set.</
     if (p === "outcome") setTimeout(() => {
       if (s5.dataset.p === "outcome") s5.dataset.ok = "1"; }, 1200 * F);
     if (p === "count") { s5cnt.textContent = "labeled outcomes · 215"; s5cnt.classList.add("bump"); }
+  });
+
+  /* S6 WRITE-BACK — enriched card, arrow flows, the note writes into the CRM record, guards land */
+  const n6 = typer(
+    document.getElementById("s6note"), document.getElementById("s6caret"),
+    "+ enriched · fit 92 · warm path: Elin Maes · signals: Fund III close, 2 grid rounds", 16);
+  stepper(document.getElementById("s6"), [
+    ["off", 800], ["result", 1600], ["write", 4000], ["sync", 2600], ["guard", 2600], ["hold", 3200],
+  ], p => {
+    if (p === "off") n6.clear();
+    if (p === "write") n6.run();
   });
 })();
 </script>
