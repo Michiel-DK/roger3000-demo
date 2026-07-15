@@ -76,8 +76,8 @@ that window. Flagged `fabricated`, stripped, never shown.
   guards so re-runs are cheap.
 - **Semantic + relational search** — every record embedded in **pgvector**; entities and
   the edges between them resolved into a traversable relationship graph — the intelligence a
-  flat database doesn't assemble. (Scale of the live dataset: ~1,200 firms, ~36k portfolio
-  companies, ~124k knowledge-graph edges.)
+  flat database doesn't assemble. (Scale of the live dataset: ~1,250 firms, ~37k portfolio
+  companies, ~128k knowledge-graph edges.)
 - **10-signal explainable matcher** — semantic similarity + nine structured signals (news
   momentum, portfolio overlap, thesis-cluster fit, co-investment, similar-firm propagation,
   revealed-preference, hard-filter prior, …), each computed independently and summed, so any
