@@ -115,6 +115,11 @@ dataset it runs on today), per-tenant data isolation so one engine serves many c
 walled-off, single-tenant deployable instances, and live CRM / mail / meeting connectors.
 Latency is a real, ongoing investment — trust and relationship depth lead, speed follows.
 
+> **On the demo:** the linked demo dramatizes two of these roadmap items as if live today
+> — pointing the engine at a client's *own* corpus (moment `01 · read`) and live CRM
+> connectors with two-way write-back (moment `05 · write-back`). They render as shipped in
+> the scrollytelling, but per the list above they are roadmap, not today.
+
 ---
 
 _Built by Michiel De Koninck. Product source is private; this repository is the demo
